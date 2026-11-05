@@ -2,7 +2,9 @@ import express from 'express';
 import helmet from 'helmet';
 import cors from 'cors';
 import config from './config/config.js';
+import { connectDatabase, disconnectDatabase } from './config/db.js';
 import healthRoutes from './routes/health.routes.js';
+import itemRoutes from './routes/item.routes.js';
 import { getRoot } from './controllers/health.controller.js';
 import { notFoundHandler, errorHandler } from './middleware/error.middleware.js';
 
@@ -31,7 +33,7 @@ app.use(
       }
       return callback(new Error(`CORS policy blocked access from origin: ${origin}`));
     },
-    methods: ['GET', 'OPTIONS'],
+    methods: ['GET', 'POST', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Accept', 'Authorization'],
     credentials: true
   })
@@ -45,6 +47,7 @@ app.get('/', getRoot);
 
 // Mount API Routes
 app.use('/api', healthRoutes);
+app.use('/api', itemRoutes);
 
 // Catch-all 404 handler for undefined routes
 app.use(notFoundHandler);
@@ -55,14 +58,19 @@ app.use(errorHandler);
 // Start server if not running in test mode
 let server;
 if (process.env.NODE_ENV !== 'test') {
+  // Connect to MongoDB
+  connectDatabase();
+
   server = app.listen(config.PORT, () => {
     console.log(`[DevOps Starter Backend] Server running in ${config.NODE_ENV} mode on port ${config.PORT}`);
     console.log(`[DevOps Starter Backend] Health check endpoint: http://localhost:${config.PORT}/api/health`);
+    console.log(`[DevOps Starter Backend] MongoDB items endpoint: http://localhost:${config.PORT}/api/items`);
   });
 
   // Graceful shutdown
-  const handleShutdown = (signal) => {
-    console.log(`\n[DevOps Starter Backend] ${signal} signal received: closing HTTP server`);
+  const handleShutdown = async (signal) => {
+    console.log(`\n[DevOps Starter Backend] ${signal} signal received: closing HTTP server and database connection`);
+    await disconnectDatabase();
     if (server) {
       server.close(() => {
         console.log('[DevOps Starter Backend] HTTP server closed cleanly');
@@ -78,4 +86,3 @@ if (process.env.NODE_ENV !== 'test') {
 }
 
 export default app;
-

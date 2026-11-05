@@ -1,6 +1,6 @@
 # DevOps Starter
 
-A production-grade, decoupled full-stack single-page application built with **React (Vite)** and **Node.js (Express)** using a clean monorepo architecture. 
+A production-grade, decoupled full-stack single-page application built with **React (Vite)**, **Node.js (Express)**, and **MongoDB (Mongoose)** using a clean monorepo architecture. 
 
 Designed specifically as a solid, cleanly engineered application baseline ready for DevOps learning, containerization, observability, and CI/CD automation.
 
@@ -9,12 +9,14 @@ Designed specifically as a solid, cleanly engineered application baseline ready 
 ## Features
 
 - **Decoupled Monorepo Architecture:** Frontend and backend maintain distinct dependency trees and build pipelines while living in a unified repository.
-- **Dynamic Real-Time Health Telemetry:** Independent health reporting via `GET /api/health` providing dynamic ISO timestamps and actual server uptime.
+- **MongoDB Document Persistence:** Complete CRUD functionality via Mongoose ODM (`/api/items`) for storing and deleting application records.
+- **Fault-Tolerant Database Resilience:** If MongoDB is offline, the backend continues running in graceful degraded mode without crashing, reporting its status via health checks.
+- **Dynamic Real-Time Health Telemetry:** Independent health reporting via `GET /api/health` providing dynamic ISO timestamps, actual server uptime, and database connection state.
 - **Live Latency & Network Measurement:** The frontend measures round-trip API latency in milliseconds via `performance.now()`.
-- **Fault-Tolerant State Handling:** Clear loading, connected, and disconnected states. Automatic and manual retry capabilities when the backend is offline.
+- **Fault-Tolerant State Handling:** Clear loading, connected, and disconnected states. Automatic and manual retry capabilities when backend or database is offline.
 - **Security Best Practices:** Express secured with Helmet HTTP security headers, CORS origin whitelisting, disabled server fingerprinting (`X-Powered-By`), and sanitization of production error messages.
-- **Developer-Focused UI:** Minimal, modern design built with pure CSS custom properties, WCAG AA accessible contrast, responsive mobile navigation drawer, and SVG icons (no emoji icons or heavy UI frameworks).
-- **100% Automated Test Coverage:** Automated unit and integration test suites for both frontend and backend using **Vitest**, **Testing Library**, and **Supertest**.
+- **Developer-Focused UI:** Minimal, modern design built with pure CSS custom properties, WCAG AA accessible contrast, responsive mobile navigation drawer, and SVG icons.
+- **100% Automated Test Coverage:** Automated unit and integration test suites for both frontend and backend using **Vitest**, **Testing Library**, and **Supertest** (21 passing tests).
 
 ---
 
@@ -30,6 +32,7 @@ Designed specifically as a solid, cleanly engineered application baseline ready 
 ### Backend
 - **Runtime:** Node.js (ES Modules)
 - **Framework:** Express.js 4
+- **Database:** MongoDB with Mongoose ODM
 - **Security:** Helmet, CORS
 - **Configuration:** Dotenv with strict environment validation
 - **Testing:** Vitest, Supertest
@@ -47,13 +50,13 @@ devops-practice-app/
 │   │   │   └── favicon.svg       # Developer terminal SVG icon
 │   │   ├── src/
 │   │   │   ├── components/       # Reusable React components
-│   │   │   │   ├── Header.jsx    # Header with mobile drawer
+│   │   │   │   ├── Header.jsx    # Header with mobile drawer & anchors
 │   │   │   │   ├── Hero.jsx      # Hero section & action buttons
 │   │   │   │   ├── StatusCard.jsx# Reusable status card
 │   │   │   │   └── Footer.jsx    # Semantic footer
 │   │   │   ├── services/
 │   │   │   │   └── api.js        # Centralized Fetch API service
-│   │   │   ├── App.jsx           # Root layout & telemetry state
+│   │   │   ├── App.jsx           # Root layout, telemetry state & MongoDB UI
 │   │   │   ├── App.css           # Modern CSS architecture
 │   │   │   └── main.jsx          # React DOM entry point
 │   │   ├── tests/
@@ -68,16 +71,22 @@ devops-practice-app/
 │   └── backend/                  # REST API Service
 │       ├── src/
 │       │   ├── routes/
-│       │   │   └── health.routes.js     # Health route mapping
+│       │   │   ├── health.routes.js     # Health route mapping
+│       │   │   └── item.routes.js       # MongoDB CRUD routes
 │       │   ├── controllers/
-│       │   │   └── health.controller.js # Endpoint business logic
+│       │   │   ├── health.controller.js # Health endpoint business logic
+│       │   │   └── item.controller.js   # MongoDB document logic
+│       │   ├── models/
+│       │   │   └── item.model.js        # Mongoose Schema & Model
 │       │   ├── middleware/
 │       │   │   └── error.middleware.js  # 404 trap & error handler
 │       │   ├── config/
-│       │   │   └── config.js            # Environment validation
+│       │   │   ├── config.js            # Environment validation
+│       │   │   └── db.js                # MongoDB connection management
 │       │   └── server.js                # Express app & server entry
 │       ├── tests/
-│       │   └── health.test.js    # Backend API integration tests
+│       │   ├── health.test.js    # Backend API integration tests
+│       │   └── items.test.js     # MongoDB integration & mock tests
 │       ├── package.json          # Backend dependencies
 │       ├── .env.example          # Environment variables template
 │       └── .env                  # Local backend environment
@@ -91,13 +100,6 @@ devops-practice-app/
 ├── package.json                  # Root monorepo orchestration scripts
 └── README.md                     # Project overview (this file)
 ```
-
----
-
-## Prerequisites
-
-- **Node.js:** v18.0.0 or higher (v20+ or v22+ recommended)
-- **npm:** v9.0.0 or higher
 
 ---
 
@@ -161,25 +163,7 @@ Run the full automated test suite across both frontend and backend:
 npm test
 ```
 
-All 11 tests across backend and frontend will run and validate HTTP status codes, security headers, dynamic uptime, loading states, error boundaries, and DOM rendering.
-
----
-
-## Troubleshooting
-
-### 1. Backend Shows "Disconnected" in Frontend
-- Check if the backend process is running: `curl http://localhost:5000/api/health`
-- Ensure port 5000 is not occupied by another process: `lsof -i :5000`
-- Confirm `VITE_API_URL` in `app/frontend/.env` matches the backend address (`http://localhost:5000`).
-
-### 2. CORS Errors in Browser Console
-- Check `FRONTEND_URL` in `app/backend/.env`. It should match your frontend origin (`http://localhost:5173`).
-- Restart the backend after updating `.env`.
-
-### 3. Port Already in Use
-- Change `PORT` in `app/backend/.env` (e.g., `PORT=5001`).
-- Update `VITE_API_URL` in `app/frontend/.env` to point to the new port (`http://localhost:5001`).
-- Restart both services.
+All 21 tests across backend and frontend will run and validate HTTP status codes, security headers, dynamic uptime, database state, loading states, error boundaries, and DOM rendering.
 
 ---
 
@@ -189,4 +173,3 @@ For in-depth documentation, refer to:
 - [Architecture Overview](file:///home/kashifhm333/Desktop/Project/DevOps-end-to-end-production-Project-/docs/architecture.md)
 - [API Documentation](file:///home/kashifhm333/Desktop/Project/DevOps-end-to-end-production-Project-/docs/api-documentation.md)
 - [Setup & Development Guide](file:///home/kashifhm333/Desktop/Project/DevOps-end-to-end-production-Project-/docs/setup.md)
-

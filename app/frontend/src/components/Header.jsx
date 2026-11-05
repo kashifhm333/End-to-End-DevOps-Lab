@@ -77,6 +77,15 @@ export default function Header() {
             </li>
             <li>
               <a
+                href="#database"
+                className="nav-link"
+                onClick={(e) => handleNavClick(e, 'database')}
+              >
+                Database
+              </a>
+            </li>
+            <li>
+              <a
                 href="#about"
                 className="nav-link"
                 onClick={(e) => handleNavClick(e, 'about')}
@@ -155,6 +164,15 @@ export default function Header() {
               onClick={(e) => handleNavClick(e, 'status')}
             >
               System Status
+            </a>
+          </li>
+          <li>
+            <a
+              href="#database"
+              className="mobile-nav-link"
+              onClick={(e) => handleNavClick(e, 'database')}
+            >
+              Database
             </a>
           </li>
           <li>

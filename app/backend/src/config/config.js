@@ -23,11 +23,13 @@ function validateConfig() {
   }
 
   const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+  const mongodbUri = process.env.MONGODB_URI || 'mongodb://localhost:27017/devops_starter';
 
   return Object.freeze({
     PORT: port,
     NODE_ENV: nodeEnv,
     FRONTEND_URL: frontendUrl,
+    MONGODB_URI: mongodbUri,
     SERVICE_NAME: 'devops-starter-backend',
     VERSION: '1.0.0'
   });

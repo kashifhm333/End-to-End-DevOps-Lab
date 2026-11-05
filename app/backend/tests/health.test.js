@@ -15,14 +15,15 @@ describe('DevOps Starter Backend REST API', () => {
         version: '1.0.0',
         status: 'running',
         endpoints: {
-          health: '/api/health'
+          health: '/api/health',
+          items: '/api/items'
         }
       });
     });
   });
 
   describe('GET /api/health', () => {
-    it('should return HTTP 200 with healthy status and dynamic telemetry', async () => {
+    it('should return HTTP 200 with healthy status, database status, and dynamic telemetry', async () => {
       const res = await request(app).get('/api/health');
 
       expect(res.status).toBe(200);
@@ -34,6 +35,9 @@ describe('DevOps Starter Backend REST API', () => {
       expect(res.body).toHaveProperty('service', 'devops-starter-backend');
       expect(res.body).toHaveProperty('timestamp');
       expect(res.body).toHaveProperty('uptime');
+      expect(res.body).toHaveProperty('database');
+      expect(res.body.database).toHaveProperty('status');
+      expect(res.body.database).toHaveProperty('type', 'mongodb');
 
       // Verify timestamp is a valid ISO date string
       const parsedDate = new Date(res.body.timestamp);
@@ -71,4 +75,3 @@ describe('DevOps Starter Backend REST API', () => {
     });
   });
 });
-

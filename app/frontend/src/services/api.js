@@ -14,7 +14,7 @@ export const API_BASE_URL = RAW_API_URL.replace(/\/+$/, '');
 export const getApiBaseUrl = () => API_BASE_URL;
 
 /**
- * Executes a GET /api/health request to check backend status.
+ * Executes a GET /api/health request to check backend and database status.
  * Measures response latency in milliseconds and handles network errors gracefully.
  *
  * @param {AbortSignal} [signal] Optional AbortSignal to cancel in-flight requests.
@@ -94,3 +94,138 @@ export const checkHealth = async (signal) => {
   }
 };
 
+/**
+ * Retrieves records from MongoDB via GET /api/items.
+ *
+ * @param {AbortSignal} [signal]
+ * @returns {Promise<{ success: boolean; data: Array<object>; error: string | null }>}
+ */
+export const fetchItems = async (signal) => {
+  const endpoint = `${API_BASE_URL}/api/items`;
+
+  try {
+    const response = await fetch(endpoint, {
+      method: 'GET',
+      headers: {
+        Accept: 'application/json'
+      },
+      signal
+    });
+
+    const result = await response.json();
+
+    if (!response.ok) {
+      return {
+        success: false,
+        data: [],
+        error: result?.error?.message || `HTTP ${response.status}: Failed to fetch records`
+      };
+    }
+
+    return {
+      success: true,
+      data: result.data || [],
+      error: null
+    };
+  } catch (err) {
+    if (err.name === 'AbortError') {
+      return { success: false, data: [], error: 'Request aborted' };
+    }
+    return {
+      success: false,
+      data: [],
+      error: `Network error: Failed to reach ${endpoint}`
+    };
+  }
+};
+
+/**
+ * Creates a new record in MongoDB via POST /api/items.
+ *
+ * @param {{ title: string; description?: string }} payload
+ * @param {AbortSignal} [signal]
+ * @returns {Promise<{ success: boolean; data: object | null; error: string | null }>}
+ */
+export const createItem = async (payload, signal) => {
+  const endpoint = `${API_BASE_URL}/api/items`;
+
+  try {
+    const response = await fetch(endpoint, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Accept: 'application/json'
+      },
+      body: JSON.stringify(payload),
+      signal
+    });
+
+    const result = await response.json();
+
+    if (!response.ok) {
+      return {
+        success: false,
+        data: null,
+        error: result?.error?.message || `HTTP ${response.status}: Failed to create record`
+      };
+    }
+
+    return {
+      success: true,
+      data: result.data,
+      error: null
+    };
+  } catch (err) {
+    if (err.name === 'AbortError') {
+      return { success: false, data: null, error: 'Request aborted' };
+    }
+    return {
+      success: false,
+      data: null,
+      error: `Network error: Failed to reach ${endpoint}`
+    };
+  }
+};
+
+/**
+ * Deletes a record from MongoDB via DELETE /api/items/:id.
+ *
+ * @param {string} id
+ * @param {AbortSignal} [signal]
+ * @returns {Promise<{ success: boolean; error: string | null }>}
+ */
+export const deleteItem = async (id, signal) => {
+  const endpoint = `${API_BASE_URL}/api/items/${id}`;
+
+  try {
+    const response = await fetch(endpoint, {
+      method: 'DELETE',
+      headers: {
+        Accept: 'application/json'
+      },
+      signal
+    });
+
+    const result = await response.json();
+
+    if (!response.ok) {
+      return {
+        success: false,
+        error: result?.error?.message || `HTTP ${response.status}: Failed to delete record`
+      };
+    }
+
+    return {
+      success: true,
+      error: null
+    };
+  } catch (err) {
+    if (err.name === 'AbortError') {
+      return { success: false, error: 'Request aborted' };
+    }
+    return {
+      success: false,
+      error: `Network error: Failed to reach ${endpoint}`
+    };
+  }
+};
