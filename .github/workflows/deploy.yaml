@@ -17,7 +17,10 @@ jobs:
         uses: actions/setup-node@v7.1.0
 
       - name: install the dependences
-        run: npm install
+        run: |
+          npm --prefix app/backend install
+          npm --prefix app/frontend install
+          
       - name: run the tests
         run: npm test
          
