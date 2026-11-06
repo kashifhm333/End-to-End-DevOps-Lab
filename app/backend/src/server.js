@@ -21,14 +21,23 @@ app.use(helmet());
 const allowedOrigins = [
   config.FRONTEND_URL,
   'http://localhost:5173',
-  'http://127.0.0.1:5173'
+  'http://127.0.0.1:5173',
+  'http://localhost:8080',
+  'http://127.0.0.1:8080',
+  'http://localhost:30081'
 ];
 
 app.use(
   cors({
     origin: (origin, callback) => {
       // Allow requests with no origin (e.g. mobile apps, curl, or same-origin)
-      if (!origin || allowedOrigins.includes(origin)) {
+      // or matching explicit allowedOrigins or any localhost/127.0.0.1 port
+      if (
+        !origin ||
+        allowedOrigins.includes(origin) ||
+        /^http:\/\/localhost(:[0-9]+)?$/.test(origin) ||
+        /^http:\/\/127\.0\.0\.1(:[0-9]+)?$/.test(origin)
+      ) {
         return callback(null, true);
       }
       return callback(new Error(`CORS policy blocked access from origin: ${origin}`));
