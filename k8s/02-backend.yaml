@@ -1,0 +1,64 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend-deployment
+  namespace: devops-project
+  labels:
+    app: backend-deployment
+spec:
+  replicas: 1 
+  selector:
+    matchLabels:
+      app: backend
+  template:
+    metadata:
+      labels:
+        app: backend
+    spec:
+      containers:
+        - name: backend-container
+          image: kashifhm333/devops-project-backend:latest
+          ports:
+            - containerPort: 5000
+          env:
+            - name: PORT
+              value: "5000"
+            - name: NODE_ENV
+              value: development
+            - name: FRONTEND_URL
+              value: http://localhost:5173
+            - name: MONGODB_URI
+              value: mongodb://mongodb-service:27017/devops_starter
+          resources:
+            requests:
+              cpu: "200m"
+              memory: "128Mi"
+            limits:
+              cpu: "500m"
+              memory: "256Mi"
+          readinessProbe:
+            httpGet:
+              path: /api/health
+              port: 5000
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            timeoutSeconds: 2
+            failureThreshold: 3
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: backend-service
+  namespace: devops-project
+spec:
+  selector:
+    app: backend
+  type: NodePort
+  ports:
+    - port: 5000
+      targetPort: 5000
+      nodePort: 30001
+
+ 
+
