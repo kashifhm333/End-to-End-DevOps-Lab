@@ -17,7 +17,8 @@ spec:
     spec:
       containers:
         - name: backend-container
-          image: kashifhm333/devops-project-backend:latest
+          image: kashifhm333/devops_end_to_end_project-backend:latest
+          imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 5000
           env:
@@ -26,7 +27,7 @@ spec:
             - name: NODE_ENV
               value: development
             - name: FRONTEND_URL
-              value: http://localhost:5173
+              value: http://localhost:30081
             - name: MONGODB_URI
               value: mongodb://mongodb-service:27017/devops_starter
           resources:

@@ -54,9 +54,9 @@ spec:
             limits:
               memory: 512Mi
               cpu: 500m
-volumeClaimTemplates:
+  volumeClaimTemplates:
     - metadata:
-        name: mongo-storage
+        name: data
       spec:
         accessModes: ["ReadWriteOnce"]
         resources:
