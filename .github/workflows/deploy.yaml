@@ -57,7 +57,7 @@ jobs:
           context: ./app/frontend
           file: ./app/frontend/Dockerfile
           push: true
-          tags: ${{ secrets.DOCKER_USERNAME }}/devops_end_to_end_project-frontend:latest
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/devops_end_to_end_project-frontend:latest
           
     
           
