@@ -30,3 +30,14 @@ module "vpc" {
   availability_zones = var.availability_zones
   
 }
+module "eks" {
+  source              = "./modules/eks"
+  cluster_name        = var.cluster_name
+  cluster_version     = var.cluster_version
+  subnet_ids          = module.vpc.public_subnet_ids
+  node_instance_types = var.node_instance_types
+  desired_size        = var.desired_node_count
+  min_size            = var.min_node_count
+  max_size            = var.max_node_count
+  environment         = var.environment
+}
